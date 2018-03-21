@@ -1,0 +1,23 @@
+cat 1
+cat 2
+cat 1
+cat 3
+cat 2
+cat 1
+dog 1
+dog 1
+dog 1
+dog 1
+dog 1
+dog 1
+dog 1
+dog 1
+dog 1
+dog 1
+bat 1
+bat 7
+bat 13
+bat 5
+bat 4
+
+
