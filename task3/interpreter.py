@@ -102,6 +102,49 @@ class VirtualMachine:
                 for value in reversed(values):
                     self.stack.append(value)
 
+            #  Build containers
+            elif instruction.opname == "BUILD_TUPLE":
+                count = instruction.arg
+                result = []
+                for _ in range(count):
+                    result.insert(0, self.stack.pop())
+                self.stack.append(tuple(result))
+
+            elif instruction.opname == "BUILD_LIST":
+                count = instruction.arg
+                result = []
+                for _ in range(count):
+                    result.insert(0, self.stack.pop())
+                self.stack.append(result)
+
+            #  Comparison operators
+            elif instruction.opname == "COMPARE_OP":
+                arg2 = self.stack.pop()
+                arg1 = self.stack.pop()
+                if instruction.argval == '==':
+                    result = arg1 == arg2
+                elif instruction.argval == '!=':
+                    result = arg1 != arg2
+                elif instruction.argval == '>':
+                    result = arg1 > arg2
+                elif instruction.argval == '<':
+                    result = arg1 < arg2
+                elif instruction.argval == '>=':
+                    result = arg1 >= arg2
+                elif instruction.argval == '<=':
+                    result = arg1 <= arg2
+                elif instruction.argval == 'in':
+                    result = arg1 in arg2
+                elif instruction.argval == 'not in':
+                    result = arg1 not in arg2
+                elif instruction.argval == 'is':
+                    result = arg1 is arg2
+                elif instruction.argval == 'is not':
+                    result = arg1 is not arg2
+                else:
+                    raise Exception("Unsupported comparison operator")
+                self.stack.append(result)
+
             #  Unary operations
             elif instruction.opname.startswith("UNARY_"):
                 arg = self.stack.pop()

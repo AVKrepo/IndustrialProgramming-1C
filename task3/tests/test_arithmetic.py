@@ -113,6 +113,57 @@ class TestLogicalOperations(object):
         assert compare_outputs(code)
 
 
+class TestComparisonOperators(object):
+
+    def test_equal(self):
+        code = "x = 1 == 2; print(x)"
+        assert compare_outputs(code)
+
+    def test_not_equal(self):
+        code = "x = 1 != 2; print(x)"
+        assert compare_outputs(code)
+
+    def test_greater(self):
+        code = "x = 1 > 2; print(x)"
+        assert compare_outputs(code)
+
+    def test_less(self):
+        code = "x = 1 < 2; print(x)"
+        assert compare_outputs(code)
+
+    def test_greater_or_equal(self):
+        code = "x = 1 >= 2; print(x)"
+        assert compare_outputs(code)
+
+    def test_less_or_equal(self):
+        code = "x = 1 <= 2; print(x)"
+        assert compare_outputs(code)
+
+    def test_is(self):
+        code = "x = 1 is 1; print(x)"
+        assert compare_outputs(code)
+
+    def test_is_not(self):
+        code = "x = 1 is not 1; print(x)"
+        assert compare_outputs(code)
+
+    def test_list(self):
+        code = "x = [1, 2, 4, 6]; print(x)"
+        assert compare_outputs(code)
+
+    def test_tuple(self):
+        code = "x = (1, 2, 4); print(x)"
+        assert compare_outputs(code)
+
+    def test_in_list(self):
+        code = "x = [1, 2, 4]; print(2 in x)"
+        assert compare_outputs(code)
+
+    def test_not_in_tuple(self):
+        code = "x = (1, 2, 4); print(2 not in x)"
+        assert compare_outputs(code)
+
+
 class TestComplexArithmetic(object):
 
     def test_complex_arithmetic1(self):
