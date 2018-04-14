@@ -71,6 +71,25 @@ class TestBinaryOperations(object):
         assert compare_outputs(code)
 
 
+class TestUnaryOperations(object):
+
+    def test_unary_plus(self):
+        code = "x = 5; print(+x)"
+        assert compare_outputs(code)
+
+    def test_unary_minus(self):
+        code = "x = 5; y = -x; print(y)"
+        assert compare_outputs(code)
+
+    def test_unary_not(self):
+        code = "x = True; print(not x)"
+        assert compare_outputs(code)
+
+    def test_unary_invert(self):
+        code = "x = 25; y = ~x; print(+y)"
+        assert compare_outputs(code)
+
+
 class TestLogicalOperations(object):
 
     def test_logical_or(self):
@@ -83,6 +102,10 @@ class TestLogicalOperations(object):
 
     def test_logical_and(self):
         code = "z = True and False; print(z)"
+        assert compare_outputs(code)
+
+    def test_logical_and_with_not(self):
+        code = "z = True and not False; print(z)"
         assert compare_outputs(code)
 
     def test_logical_and_with_jump(self):

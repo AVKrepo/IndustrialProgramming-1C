@@ -101,6 +101,21 @@ class VirtualMachine:
                 for value in reversed(values):
                     self.stack.append(value)
 
+            """Unary operations"""
+            if instruction.opname.startswith("UNARY_"):
+                arg = self.stack.pop()
+                if instruction.opname == "UNARY_POSITIVE":
+                    result = +arg
+                elif instruction.opname == "UNARY_NEGATIVE":
+                    result = -arg
+                elif instruction.opname == "UNARY_NOT":
+                    result = not arg
+                elif instruction.opname == "UNARY_INVERT":
+                    result = ~arg
+                else:
+                    raise Exception()
+                self.stack.append(result)
+
             """Binary operations"""
             if instruction.opname.startswith("BINARY_"):
                 arg2 = self.stack.pop()
