@@ -11,8 +11,7 @@ class VirtualMachine:
             self.builtins = globals()["__builtins__"]
         self.globals = globals()
         self.locals = {}
-        self.consts = []
-        self.names = []
+        self.stack = []
 
     def find_instance_by_name(self, name):
         if name in self.locals:
@@ -38,38 +37,54 @@ class VirtualMachine:
 
         for instruction in dis.get_instructions(code_obj):
             if instruction.opname == "LOAD_CONST":
-                self.consts.append(instruction.argval)
+                self.stack.append(instruction.argval)
 
             if instruction.opname == "LOAD_NAME":
-                self.names.append(instruction.argval)
+                name = instruction.argval
+                value, namespace = self.find_instance_by_name(name)
+                self.stack.append(value)
 
             if instruction.opname == "CALL_FUNCTION":
-                func_name = self.names.pop()
-                func, namespace = self.find_instance_by_name(func_name)
                 args = []
                 for _ in range(instruction.arg):
-                    args.insert(0, self.consts.pop())
+                    args.insert(0, self.stack.pop())
+                func = self.stack.pop()
                 retval = func(*args)
-                self.consts.append(retval)
+                self.stack.append(retval)
 
             if instruction.opname == "CALL_FUNCTION_KW":
-                func_name = self.names.pop()
-                func, namespace = self.find_instance_by_name(func_name)
                 args = []
                 kwargs = {}
-                key_words = self.consts.pop()
+                key_words = self.stack.pop()
                 for key_word in reversed(key_words):
-                    kwargs[key_word] = self.consts.pop()
+                    kwargs[key_word] = self.stack.pop()
                 for _ in range(instruction.arg - len(kwargs)):
-                    args.insert(0, self.consts.pop())
+                    args.insert(0, self.stack.pop())
+                func = self.stack.pop()
                 retval = func(*args, **kwargs)
-                self.consts.append(retval)
+                self.stack.append(retval)
 
             if instruction.opname == "RETURN_VALUE":
-                self.consts.append(instruction.argval)
+                pass
+                # self.stack.append(instruction.argval)
 
             if instruction.opname == "POP_TOP":
-                self.consts.pop()
+                self.stack.pop()
+
+            if instruction.opname == "STORE_NAME":
+                name = instruction.argval
+                value = self.stack.pop()
+                self.locals[name] = value
+
+            if instruction.opname == "DUP_TOP":
+                value = self.stack[-1]
+                self.stack.append(value)
+
+            if instruction.opname == "UNPACK_SEQUENCE":
+                # count = instruction.arg
+                values = self.stack.pop()
+                for value in reversed(values):
+                    self.stack.append(value)
 
         return None
 
