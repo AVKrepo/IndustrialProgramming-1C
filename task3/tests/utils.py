@@ -10,7 +10,7 @@ def compare_outputs(code):
     vm_stderr = io.StringIO()
     with redirect_stdout(vm_stdout), redirect_stderr(vm_stderr):
         try:
-                vm.run_code(code)
+            vm.run_code(code)
         except Exception:
             pass
 
@@ -29,7 +29,7 @@ def compare_outputs(code):
         print(vm_stdout.getvalue())
         print("----exec_stdout----")
         print(exec_stdout.getvalue())
-    assert vm_stdout.getvalue() == exec_stdout.getvalue()
+        print()
 
     if vm_stderr.getvalue() != exec_stderr.getvalue():
         print("Stderr is different:")
@@ -37,6 +37,9 @@ def compare_outputs(code):
         print(vm_stderr.getvalue())
         print("----exec_stderr----")
         print(exec_stderr.getvalue())
+        print()
+
+    assert vm_stdout.getvalue() == exec_stdout.getvalue()
     assert vm_stderr.getvalue() == exec_stderr.getvalue()
 
     print("End of compare_outputs")
