@@ -1,3 +1,5 @@
+"""This file contains custom simple implementation of python3.6 interpreter"""
+
 import types
 import dis
 
