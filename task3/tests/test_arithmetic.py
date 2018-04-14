@@ -119,7 +119,7 @@ class TestComplexArithmetic(object):
         code = "z = False; z |= True; print(z or True and False)"
         assert compare_outputs(code)
 
-    def test_complex_arithmetic1(self):
+    def test_complex_arithmetic2(self):
         code = "x, y = 20, 50 // 6; y **= 0.4; z = (x + y) * (y - 2); print(z + 1)"
         assert compare_outputs(code)
 
