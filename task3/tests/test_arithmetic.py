@@ -1,7 +1,7 @@
 from tests.utils import compare_outputs
 
 
-class TestArithmetic(object):
+class TestAssignment(object):
 
     def test_assignment(self):
         code = "x = 1; print(x)"
@@ -14,6 +14,9 @@ class TestArithmetic(object):
     def test_double_assignment(self):
         code = "x, y = 1, 2; print(x, y)"
         assert compare_outputs(code)
+
+
+class TestBinaryOperations(object):
 
     def test_binary_add(self):
         code = "x = 1; y = x + 4; print(y)"
@@ -62,3 +65,31 @@ class TestArithmetic(object):
     def test_binary_or(self):
         code = "x = 1; y = x | 4; print(y)"
         assert compare_outputs(code)
+
+    def test_complex_operations(self):
+        code = "x = 1; y = x | 4; print(y)"
+        assert compare_outputs(code)
+
+
+class TestLogicalOperations(object):
+
+    def test_logical_or(self):
+        code = "z = False or True; print(z)"
+        assert compare_outputs(code)
+
+    def test_logical_or_with_jump(self):
+        code = "z = True or False; print(z)"
+        assert compare_outputs(code)
+
+    def test_logical_and(self):
+        code = "z = True and False; print(z)"
+        assert compare_outputs(code)
+
+    def test_logical_and_with_jump(self):
+        code = "z = False and True; print(z)"
+        assert compare_outputs(code)
+
+
+
+
+

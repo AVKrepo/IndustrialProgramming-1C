@@ -14,6 +14,7 @@ class VirtualMachine:
         self.globals = globals()
         self.locals = {}
         self.stack = []
+        self.is_jump = False
 
     def find_instance_by_name(self, name):
         if name in self.locals:
@@ -29,6 +30,12 @@ class VirtualMachine:
             raise NameError
         return instance, namespace
 
+    def __str__(self):
+        result = "Locals: " + str(self.locals)
+        result += " |  stack: " + str(self.stack)
+        result += " | is_jump: " + str(self.is_jump)
+        return result
+
     def run_code(self, code):
         if isinstance(code, types.CodeType):
             code_obj = code
@@ -38,6 +45,11 @@ class VirtualMachine:
             raise TypeError
 
         for instruction in dis.get_instructions(code_obj):
+            if self.is_jump:
+                if instruction.is_jump_target:
+                    self.is_jump = False
+                else:
+                    continue
 
             if instruction.opname == "LOAD_CONST":
                 self.stack.append(instruction.argval)
@@ -125,8 +137,24 @@ class VirtualMachine:
                     raise Exception()
                 self.stack.append(result)
 
+            """Logic operations"""
+            if instruction.opname == "JUMP_IF_TRUE_OR_POP":
+                top = self.stack.pop()
+                if top:
+                    self.is_jump = True
+                    self.stack.append(top)
+
+            if instruction.opname == "JUMP_IF_FALSE_OR_POP":
+                top = self.stack.pop()
+                if not top:
+                    self.is_jump = True
+                    self.stack.append(top)
+
+            # if instruction.opname == "JUMP_IF_TRUE_OR_POP":
+
         return None
 
 
 if __name__ == "__main__":
     vm = VirtualMachine()
+    print(vm)
