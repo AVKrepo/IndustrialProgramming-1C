@@ -16,7 +16,7 @@ class VirtualMachine:
         self.globals = globals()
         self.locals = {}
         self.stack = []
-        self.is_jump = False
+        self.jump_to = None
 
     def find_instance_by_name(self, name):
         if name in self.locals:
@@ -35,7 +35,7 @@ class VirtualMachine:
     def __str__(self):
         result = "Locals: " + str(self.locals)
         result += " |  stack: " + str(self.stack)
-        result += " | is_jump: " + str(self.is_jump)
+        result += " | jump_to: " + str(self.jump_to)
         return result
 
     def run_code(self, code):
@@ -47,11 +47,10 @@ class VirtualMachine:
             raise TypeError
 
         for instruction in dis.get_instructions(code_obj):
-            if self.is_jump:
-                if instruction.is_jump_target:
-                    self.is_jump = False
-                else:
-                    continue
+            if self.jump_to and self.jump_to != instruction.offset:
+                continue
+            else:
+                self.jump_to = None
 
             if instruction.opname == "LOAD_CONST":
                 self.stack.append(instruction.argval)
@@ -154,20 +153,34 @@ class VirtualMachine:
                     raise Exception("Unsupported binary (or inplace) operator")
                 self.stack.append(result)
 
-            #  Logical operations
+            #  Logical operations and cases
             elif instruction.opname == "JUMP_IF_TRUE_OR_POP":
                 top = self.stack.pop()
                 if top:
-                    self.is_jump = True
+                    self.jump_to = instruction.argval
                     self.stack.append(top)
 
             elif instruction.opname == "JUMP_IF_FALSE_OR_POP":
                 top = self.stack.pop()
                 if not top:
-                    self.is_jump = True
+                    self.jump_to = instruction.argval
                     self.stack.append(top)
 
-            # if instruction.opname == "JUMP_IF_TRUE_OR_POP":
+            elif instruction.opname == "POP_JUMP_IF_TRUE":
+                top = self.stack.pop()
+                if top:
+                    self.jump_to = instruction.argval
+
+            elif instruction.opname == "POP_JUMP_IF_FALSE":
+                top = self.stack.pop()
+                if not top:
+                    self.jump_to = instruction.argval
+
+            elif instruction.opname == "JUMP_FORWARD":
+                self.jump_to = instruction.argval
+
+
+
             else:
                 raise Exception("Unsupported instruction")
 
