@@ -36,6 +36,7 @@ class VirtualMachine:
             raise TypeError
 
         for instruction in dis.get_instructions(code_obj):
+
             if instruction.opname == "LOAD_CONST":
                 self.stack.append(instruction.argval)
 
@@ -85,6 +86,42 @@ class VirtualMachine:
                 values = self.stack.pop()
                 for value in reversed(values):
                     self.stack.append(value)
+
+            """Binary operations"""
+            if instruction.opname.startswith("BINARY_"):
+                arg2 = self.stack.pop()
+                arg1 = self.stack.pop()
+                if instruction.opname == "BINARY_ADD":
+                    result = arg1 + arg2
+                elif instruction.opname == "BINARY_SUBTRACT":
+                    result = arg1 - arg2
+                elif instruction.opname == "BINARY_MULTIPLY":
+                    result = arg1 * arg2
+                elif instruction.opname == "BINARY_POWER":
+                    result = arg1 ** arg2
+                elif instruction.opname == "BINARY_FLOOR_DIVIDE":
+                    result = arg1 // arg2
+                elif instruction.opname == "BINARY_TRUE_DIVIDE":
+                    result = arg1 / arg2
+                elif instruction.opname == "BINARY_MODULO":
+                    result = arg1 % arg2
+                elif instruction.opname == "BINARY_SUBSCR":
+                    result = arg1[arg2]
+                elif instruction.opname == "BINARY_LSHIFT":
+                    result = arg1 << arg2
+                elif instruction.opname == "BINARY_RSHIFT":
+                    result = arg1 >> arg2
+                elif instruction.opname == "BINARY_AND":
+                    result = arg1 & arg2
+                elif instruction.opname == "BINARY_XOR":
+                    result = arg1 ^ arg2
+                elif instruction.opname == "BINARY_OR":
+                    result = arg1 | arg2
+                elif instruction.opname == "BINARY_MATRIX_MULTIPLY":
+                    result = arg1 @ arg2
+                else:
+                    raise Exception()
+                self.stack.append(result)
 
         return None
 
