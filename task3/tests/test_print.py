@@ -37,5 +37,4 @@ class TestPrint(object):
 
     def test_double_print(self):
         code = """print(1); print(2)"""
-        codeobj = compile(code, 'test', 'exec')
         assert compare_outputs(code)
