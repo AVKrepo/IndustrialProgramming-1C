@@ -2,6 +2,8 @@
 
 import types
 import dis
+import sys
+import os.path
 
 
 class VirtualMachine:
@@ -54,12 +56,12 @@ class VirtualMachine:
             if instruction.opname == "LOAD_CONST":
                 self.stack.append(instruction.argval)
 
-            if instruction.opname == "LOAD_NAME":
+            elif instruction.opname == "LOAD_NAME":
                 name = instruction.argval
                 value, namespace = self.find_instance_by_name(name)
                 self.stack.append(value)
 
-            if instruction.opname == "CALL_FUNCTION":
+            elif instruction.opname == "CALL_FUNCTION":
                 args = []
                 for _ in range(instruction.arg):
                     args.insert(0, self.stack.pop())
@@ -67,7 +69,7 @@ class VirtualMachine:
                 retval = func(*args)
                 self.stack.append(retval)
 
-            if instruction.opname == "CALL_FUNCTION_KW":
+            elif instruction.opname == "CALL_FUNCTION_KW":
                 args = []
                 kwargs = {}
                 key_words = self.stack.pop()
@@ -79,30 +81,30 @@ class VirtualMachine:
                 retval = func(*args, **kwargs)
                 self.stack.append(retval)
 
-            if instruction.opname == "RETURN_VALUE":
+            elif instruction.opname == "RETURN_VALUE":
                 pass
                 # self.stack.append(instruction.argval)
 
-            if instruction.opname == "POP_TOP":
+            elif instruction.opname == "POP_TOP":
                 self.stack.pop()
 
-            if instruction.opname == "STORE_NAME":
+            elif instruction.opname == "STORE_NAME":
                 name = instruction.argval
                 value = self.stack.pop()
                 self.locals[name] = value
 
-            if instruction.opname == "DUP_TOP":
+            elif instruction.opname == "DUP_TOP":
                 value = self.stack[-1]
                 self.stack.append(value)
 
-            if instruction.opname == "UNPACK_SEQUENCE":
+            elif instruction.opname == "UNPACK_SEQUENCE":
                 # count = instruction.arg
                 values = self.stack.pop()
                 for value in reversed(values):
                     self.stack.append(value)
 
-            """Unary operations"""
-            if instruction.opname.startswith("UNARY_"):
+            #  Unary operations
+            elif instruction.opname.startswith("UNARY_"):
                 arg = self.stack.pop()
                 if instruction.opname == "UNARY_POSITIVE":
                     result = +arg
@@ -113,63 +115,76 @@ class VirtualMachine:
                 elif instruction.opname == "UNARY_INVERT":
                     result = ~arg
                 else:
-                    raise Exception()
+                    raise Exception("Unsupported unary operator")
                 self.stack.append(result)
 
-            """Binary operations"""
-            if instruction.opname.startswith("BINARY_"):
+            #  Binary and inplace operations
+            elif instruction.opname.startswith(("BINARY_", "INPLACE_")):
                 arg2 = self.stack.pop()
                 arg1 = self.stack.pop()
-                if instruction.opname == "BINARY_ADD":
+                if instruction.opname.endswith("_ADD"):
                     result = arg1 + arg2
-                elif instruction.opname == "BINARY_SUBTRACT":
+                elif instruction.opname.endswith("_SUBTRACT"):
                     result = arg1 - arg2
-                elif instruction.opname == "BINARY_MULTIPLY":
+                elif instruction.opname.endswith("_MULTIPLY"):
                     result = arg1 * arg2
-                elif instruction.opname == "BINARY_POWER":
+                elif instruction.opname.endswith("_POWER"):
                     result = arg1 ** arg2
-                elif instruction.opname == "BINARY_FLOOR_DIVIDE":
+                elif instruction.opname.endswith("_FLOOR_DIVIDE"):
                     result = arg1 // arg2
-                elif instruction.opname == "BINARY_TRUE_DIVIDE":
+                elif instruction.opname.endswith("_TRUE_DIVIDE"):
                     result = arg1 / arg2
-                elif instruction.opname == "BINARY_MODULO":
+                elif instruction.opname.endswith("_MODULO"):
                     result = arg1 % arg2
-                elif instruction.opname == "BINARY_SUBSCR":
+                elif instruction.opname.endswith("_SUBSCR"):
                     result = arg1[arg2]
-                elif instruction.opname == "BINARY_LSHIFT":
+                elif instruction.opname.endswith("_LSHIFT"):
                     result = arg1 << arg2
-                elif instruction.opname == "BINARY_RSHIFT":
+                elif instruction.opname.endswith("_RSHIFT"):
                     result = arg1 >> arg2
-                elif instruction.opname == "BINARY_AND":
+                elif instruction.opname.endswith("_AND"):
                     result = arg1 & arg2
-                elif instruction.opname == "BINARY_XOR":
+                elif instruction.opname.endswith("_XOR"):
                     result = arg1 ^ arg2
-                elif instruction.opname == "BINARY_OR":
+                elif instruction.opname.endswith("_OR"):
                     result = arg1 | arg2
-                elif instruction.opname == "BINARY_MATRIX_MULTIPLY":
+                elif instruction.opname.endswith("_MATRIX_MULTIPLY"):
                     result = arg1 @ arg2
                 else:
-                    raise Exception()
+                    raise Exception("Unsupported binary (or inplace) operator")
                 self.stack.append(result)
 
-            """Logic operations"""
-            if instruction.opname == "JUMP_IF_TRUE_OR_POP":
+            #  Logical operations
+            elif instruction.opname == "JUMP_IF_TRUE_OR_POP":
                 top = self.stack.pop()
                 if top:
                     self.is_jump = True
                     self.stack.append(top)
 
-            if instruction.opname == "JUMP_IF_FALSE_OR_POP":
+            elif instruction.opname == "JUMP_IF_FALSE_OR_POP":
                 top = self.stack.pop()
                 if not top:
                     self.is_jump = True
                     self.stack.append(top)
 
             # if instruction.opname == "JUMP_IF_TRUE_OR_POP":
+            else:
+                raise Exception("Unsupported instruction")
 
         return None
 
 
 if __name__ == "__main__":
     vm = VirtualMachine()
-    print(vm)
+    print("Using custom VirtualMachine as python3.6 interpreter...")
+    if len(sys.argv) != 2:
+        print("Rule of using:\n$ python interpreter.py <file_to_execute.py>")
+        exit()
+    file_name = sys.argv[-1]
+    if not os.path.isfile(file_name):
+        print("Rule of using:\n$ python interpreter.py <file_to_execute.py>")
+        print("Please, select an existing file to interpret")
+        exit()
+    with open(file_name, "r") as file:
+        file_content = "".join(file.readlines())
+    vm.run_code(file_content)
