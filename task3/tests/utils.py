@@ -1,4 +1,5 @@
 import io
+import sys
 from contextlib import redirect_stdout, redirect_stderr
 
 import interpreter
@@ -22,7 +23,14 @@ def compare_outputs(code):
         except Exception:
             pass
 
-    # print(vm_stdout.getvalue())
+    if vm_stderr.getvalue() != exec_stderr.getvalue():
+        print("Stderr is different:", file=sys.stderr)
+        print("-----vm_stderr-----", file=sys.stderr)
+        print(vm_stderr.getvalue(), file=sys.stderr)
+        print("----exec_stderr----", file=sys.stderr)
+        print(exec_stderr.getvalue(), file=sys.stderr)
+        print(file=sys.stderr)
+
     if vm_stdout.getvalue() != exec_stdout.getvalue():
         print("Stdout is different:")
         print("-----vm_stdout-----")
@@ -31,16 +39,8 @@ def compare_outputs(code):
         print(exec_stdout.getvalue())
         print()
 
-    if vm_stderr.getvalue() != exec_stderr.getvalue():
-        print("Stderr is different:")
-        print("-----vm_stderr-----")
-        print(vm_stderr.getvalue())
-        print("----exec_stderr----")
-        print(exec_stderr.getvalue())
-        print()
-
-    assert vm_stdout.getvalue() == exec_stdout.getvalue()
     assert vm_stderr.getvalue() == exec_stderr.getvalue()
+    assert vm_stdout.getvalue() == exec_stdout.getvalue()
 
     print("End of compare_outputs")
     return True
