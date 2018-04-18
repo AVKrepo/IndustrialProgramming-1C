@@ -147,14 +147,6 @@ class TestComparisonOperators(object):
         code = "x = 1 is not 1; print(x)"
         assert compare_outputs(code)
 
-    def test_list(self):
-        code = "x = [1, 2, 4, 6]; print(x)"
-        assert compare_outputs(code)
-
-    def test_tuple(self):
-        code = "x = (1, 2, 4); print(x)"
-        assert compare_outputs(code)
-
     def test_in_list(self):
         code = "x = [1, 2, 4]; print(2 in x)"
         assert compare_outputs(code)
