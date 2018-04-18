@@ -8,6 +8,16 @@ import os.path
 
 class VirtualMachine:
 
+    class CodeBlock:
+
+        def __init__(self, instruction):
+            self.name = None
+            self.constant_table = []
+            self.num_instructions = instruction.arg / 2
+            self.instructions = []
+
+
+
     def __init__(self):
         if __name__ == "__main__":
             self.builtins = globals()["__builtins__"].__dict__
@@ -16,7 +26,6 @@ class VirtualMachine:
         self.globals = globals()
         self.locals = {}
         self.stack = []
-        self.jump_to = None
 
     def find_instance_by_name(self, name):
         if name in self.locals:
@@ -35,8 +44,11 @@ class VirtualMachine:
     def __str__(self):
         result = "Locals: " + str(self.locals)
         result += " |  stack: " + str(self.stack)
-        result += " | jump_to: " + str(self.jump_to)
         return result
+
+    def get_step_by_argval(self, argval):
+        step = argval // 2 - 1
+        return step
 
     def run_code(self, code):
         if isinstance(code, types.CodeType):
@@ -46,11 +58,10 @@ class VirtualMachine:
         else:
             raise TypeError
 
-        for instruction in dis.get_instructions(code_obj):
-            if self.jump_to and self.jump_to != instruction.offset:
-                continue
-            else:
-                self.jump_to = None
+        instructions = list(dis.get_instructions(code_obj))
+        step = 0
+        while step < len(instructions):
+            instruction = instructions[step]
 
             if instruction.opname == "LOAD_CONST":
                 self.stack.append(instruction.argval)
@@ -82,6 +93,7 @@ class VirtualMachine:
 
             elif instruction.opname == "RETURN_VALUE":
                 pass
+                # TODO
                 # self.stack.append(instruction.argval)
 
             elif instruction.opname == "POP_TOP":
@@ -160,6 +172,11 @@ class VirtualMachine:
                     raise Exception("Unsupported unary operator")
                 self.stack.append(result)
 
+            elif instruction.opname == "GET_ITER":
+                arg = self.stack.pop()
+                result = iter(arg)
+                self.stack.append(result)
+
             #  Binary and inplace operations
             elif instruction.opname.startswith(("BINARY_", "INPLACE_")):
                 arg2 = self.stack.pop()
@@ -196,36 +213,56 @@ class VirtualMachine:
                     raise Exception("Unsupported binary (or inplace) operator")
                 self.stack.append(result)
 
-            #  Logical operations and cases
+            #  Operations with jumps (logical, for, etc)
             elif instruction.opname == "JUMP_IF_TRUE_OR_POP":
                 top = self.stack.pop()
                 if top:
-                    self.jump_to = instruction.argval
+                    step = self.get_step_by_argval(instruction.argval)
                     self.stack.append(top)
 
             elif instruction.opname == "JUMP_IF_FALSE_OR_POP":
                 top = self.stack.pop()
                 if not top:
-                    self.jump_to = instruction.argval
+                    step = self.get_step_by_argval(instruction.argval)
                     self.stack.append(top)
 
             elif instruction.opname == "POP_JUMP_IF_TRUE":
                 top = self.stack.pop()
                 if top:
-                    self.jump_to = instruction.argval
+                    step = self.get_step_by_argval(instruction.argval)
 
             elif instruction.opname == "POP_JUMP_IF_FALSE":
                 top = self.stack.pop()
                 if not top:
-                    self.jump_to = instruction.argval
+                    step = self.get_step_by_argval(instruction.argval)
 
             elif instruction.opname == "JUMP_FORWARD":
-                self.jump_to = instruction.argval
+                step = self.get_step_by_argval(instruction.argval)
 
+            elif instruction.opname == "JUMP_ABSOLUTE":
+                step = self.get_step_by_argval(instruction.argval)
 
+            elif instruction.opname == "FOR_ITER":
+                top = self.stack[-1]
+                try:
+                    elem = top.__next__()
+                    self.stack.append(elem)
+                except StopIteration:
+                    self.stack.pop()
+                    step = self.get_step_by_argval(instruction.argval)
+
+            elif instruction.opname == "SETUP_LOOP":
+                pass
+                # TODO
+
+            elif instruction.opname == "POP_BLOCK":
+                pass
+                # TODO
 
             else:
                 raise Exception("Unsupported instruction")
+
+            step += 1
 
         return None
 

@@ -31,3 +31,13 @@ class TestCases(object):
         code = "t, f = True, False\nif f: print(1)\nelse:\n\tif f: print(2)\n\telse: print(3)"
         assert compare_outputs(code)
 
+
+class TestCycles(object):
+
+    def test_for_in_list(self):
+        code = "for i in [1, 2]: print(i)"
+        assert compare_outputs(code)
+
+    def test_for_in_tuple(self):
+        code = "for i in (1, 2, 5): print(i)"
+        assert compare_outputs(code)
