@@ -91,6 +91,19 @@ class VirtualMachine:
                 retval = func(*args, **kwargs)
                 self.stack.append(retval)
 
+            elif instruction.opname == "CALL_FUNCTION_EX":
+                if instruction.arg == 0:
+                    kwargs = {}
+                    args = self.stack.pop()
+                elif instruction.arg == 1:
+                    kwargs = self.stack.pop()
+                    args = self.stack.pop()
+                else:
+                    raise Exception("Unknown instruction.arg in CALL_FUNCTION_EX")
+                func = self.stack.pop()
+                retval = func(*args, **kwargs)
+                self.stack.append(retval)
+
             elif instruction.opname == "RETURN_VALUE":
                 pass
                 # TODO
@@ -115,19 +128,47 @@ class VirtualMachine:
                     self.stack.append(value)
 
             #  Build containers
-            elif instruction.opname == "BUILD_TUPLE":
+            elif instruction.opname.startswith("BUILD_"):
                 count = instruction.arg
-                result = []
-                for _ in range(count):
-                    result.insert(0, self.stack.pop())
-                self.stack.append(tuple(result))
-
-            elif instruction.opname == "BUILD_LIST":
-                count = instruction.arg
-                result = []
-                for _ in range(count):
-                    result.insert(0, self.stack.pop())
-                self.stack.append(result)
+                if instruction.opname.endswith(("_LIST", "_TUPLE", "_SET")):
+                    result = []
+                    for _ in range(count):
+                        result.insert(0, self.stack.pop())
+                    if instruction.opname == "BUILD_LIST":
+                        self.stack.append(result)
+                    elif instruction.opname == "BUILD_TUPLE":
+                        self.stack.append(tuple(result))
+                    elif instruction.opname == "BUILD_SET":
+                        self.stack.append(set(result))
+                    else:
+                        raise Exception("Unknown type of container")
+                # elif instruction.opname == "BUILD_MAP":
+                #     result = {}
+                #     for _ in range(count):
+                #         key = self.stack.pop()
+                #         value = self.stack.pop()
+                #         result[key] = value
+                #     self.stack.append(result)
+                elif instruction.opname == "BUILD_CONST_KEY_MAP":
+                    items = []
+                    keys = self.stack.pop()
+                    for key in reversed(keys):
+                        value = self.stack.pop()
+                        items.insert(0, (key, value))
+                    result = dict(items)
+                    self.stack.append(result)
+                elif instruction.opname == "BUILD_SLICE":
+                    arg1 = self.stack.pop()
+                    arg2 = self.stack.pop()
+                    if instruction.arg == 2:
+                        self.stack.append(slice(arg2, arg1))
+                    elif instruction.arg == 3:
+                        arg3 = self.stack.pop()
+                        self.stack.append(slice(arg3, arg2, arg1))
+                    else:
+                        raise  Exception("Unknown instruction.arg in BUILD_SLICE")
+                else:
+                    raise Exception("Unknown type of container")
 
             #  Comparison operators
             elif instruction.opname == "COMPARE_OP":
