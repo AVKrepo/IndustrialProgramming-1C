@@ -19,6 +19,10 @@ class TestContainers(object):
         code = "x = {1:2, 3:4, 5:6}\nprint(x)"
         assert compare_outputs(code)
 
+    def test_list_len(self):
+        code = "x = [1, 2, 4, 6]; print(len(x))"
+        assert compare_outputs(code)
+
     def test_list_slice(self):
         code = "x = [1, 2, 3]\nprint(x[1:2])"
         assert compare_outputs(code)
