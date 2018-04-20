@@ -17,6 +17,7 @@ class VirtualMachine:
 
         def __call__(self, *args, **kwargs):
             self.interpreter.co_varnames.append((args, kwargs))
+            # print(dis.dis(self.code))
             self.interpreter.run_code(self.code)
             retval = self.interpreter.stack.pop()
             self.interpreter.co_varnames.pop()
