@@ -8,15 +8,19 @@ import os.path
 
 class VirtualMachine:
 
-    class CodeBlock:
+    class Function:
 
-        def __init__(self, instruction):
-            self.name = None
-            self.constant_table = []
-            self.num_instructions = instruction.arg / 2
-            self.instructions = []
+        def __init__(self, interpreter):
+            self.interpreter = interpreter
+            self.name = interpreter.stack.pop()
+            self.code = interpreter.stack.pop()
 
-
+        def __call__(self, *args, **kwargs):
+            self.interpreter.co_varnames.append((args, kwargs))
+            self.interpreter.run_code(self.code)
+            retval = self.interpreter.stack.pop()
+            self.interpreter.co_varnames.pop()
+            return retval
 
     def __init__(self):
         if __name__ == "__main__":
@@ -26,6 +30,7 @@ class VirtualMachine:
         self.globals = globals()
         self.locals = {}
         self.stack = []
+        self.co_varnames = []
 
     def find_instance_by_name(self, name):
         if name in self.locals:
@@ -44,6 +49,7 @@ class VirtualMachine:
     def __str__(self):
         result = "Locals: " + str(self.locals)
         result += " |  stack: " + str(self.stack)
+        result += " | co_varnames: " + str(self.co_varnames)
         return result
 
     def get_step_by_argval(self, argval):
@@ -70,6 +76,18 @@ class VirtualMachine:
                 name = instruction.argval
                 value, namespace = self.find_instance_by_name(name)
                 self.stack.append(value)
+
+            elif instruction.opname == "LOAD_GLOBAL":
+                name = instruction.argval
+                value, namespace = self.find_instance_by_name(name)
+                self.stack.append(value)
+
+            elif instruction.opname == "LOAD_FAST":
+                args, kwargs = self.co_varnames[-1]
+                arg = args[instruction.arg]
+                # print("ARGUMENT", arg)
+                self.stack.append(arg)
+                # TODO: improve handling function arguments
 
             elif instruction.opname == "CALL_FUNCTION":
                 args = []
@@ -104,10 +122,14 @@ class VirtualMachine:
                 retval = func(*args, **kwargs)
                 self.stack.append(retval)
 
+            elif instruction.opname == "MAKE_FUNCTION":
+                func = self.Function(self)
+                self.stack.append(func)
+
             elif instruction.opname == "RETURN_VALUE":
-                pass
-                # TODO
+                # TODO: implement, if complex logic is necessary
                 # self.stack.append(instruction.argval)
+                pass
 
             elif instruction.opname == "POP_TOP":
                 self.stack.pop()
