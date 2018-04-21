@@ -12,16 +12,16 @@ def compare_outputs(code):
     with redirect_stdout(vm_stdout), redirect_stderr(vm_stderr):
         try:
             vm.run_code(code)
-        except Exception:
-            pass
+        except Exception as exception:
+            print(exception, file=sys.stderr)
 
     exec_stdout = io.StringIO()
     exec_stderr = io.StringIO()
     with redirect_stdout(exec_stdout), redirect_stderr(exec_stderr):
         try:
             exec(code)
-        except Exception:
-            pass
+        except Exception as exception:
+            print(exception, file=sys.stderr)
 
     if vm_stderr.getvalue() != exec_stderr.getvalue():
         print("Stderr is different:", file=sys.stderr)
