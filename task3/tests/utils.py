@@ -1,5 +1,6 @@
 import io
 import sys
+import traceback
 from contextlib import redirect_stdout, redirect_stderr
 
 import interpreter
@@ -14,6 +15,7 @@ def compare_outputs(code):
             vm.run_code(code)
         except Exception as exception:
             print(exception, file=sys.stderr)
+            # traceback.print_exc()
 
     exec_stdout = io.StringIO()
     exec_stderr = io.StringIO()
@@ -22,6 +24,7 @@ def compare_outputs(code):
             exec(code)
         except Exception as exception:
             print(exception, file=sys.stderr)
+            # traceback.print_exc()
 
     if vm_stderr.getvalue() != exec_stderr.getvalue():
         print("Stderr is different:", file=sys.stderr)
